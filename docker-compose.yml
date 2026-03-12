@@ -1,0 +1,40 @@
+version: "3"
+
+services:
+
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: password
+    volumes:
+      - pgdata:/var/lib/postgresql
+
+  qdrant:
+    image: qdrant/qdrant
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrantdata:/qdrant/storage
+
+  redis:
+    image: redis
+
+  api:
+    build: ./app
+    container_name: api
+    depends_on:
+      - redis
+      - postgres
+
+  nginx:
+    image: nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
+  qdrantdata:
